@@ -1,238 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>ESP32 LoRa Irigasi Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <title>ESP32 LoRa Irigasi - Dashboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      background-color: #f3f7fb;
-      margin: 0;
-      padding: 0;
-    }
-    h1 {
-      margin-top: 30px;
-      font-size: 1.8rem;
-      color: #333;
-    }
-    .sensor-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 25px;
-    }
-    .card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin: 10px;
-      width: 200px;
-    }
-    .card h2 {
-      margin: 5px 0;
-      font-size: 1.1rem;
-      color: #444;
-    }
-    .card .value {
-      font-size: 1.8rem;
-      color: #0078d7;
-      font-weight: bold;
-    }
-    .control-section {
-      margin: 30px 0;
-    }
-    .control-section button {
-      padding: 10px 25px;
-      font-size: 16px;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      margin: 8px;
-      transition: opacity 0.3s ease;
-    }
-    #pumpBtn {
-      background-color: #0078d7;
-    }
-    #pumpBtn.on {
-      background-color: #43a047;
-    }
-    #modeBtn {
-      background-color: #f57c00;
-    }
-    #logoutBtn {
-      background-color: #555;
-    }
-    button:hover {
-      opacity: 0.85;
-    }
-
-    /* LOGIN FORM */
-    #loginForm {
-      max-width: 400px;
-      margin: 80px auto;
-      background: white;
-      padding: 30px 25px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    #loginForm input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1.5px solid #ccc;
-      border-radius: 10px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-    #loginForm button {
-      width: 100%;
-      background-color: #0078d7;
-      color: white;
-      padding: 12px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    #loginForm button:hover {
-      background-color: #005bb5;
-    }
-
-    #dashboard {
-      display: none;
-      padding-bottom: 40px;
-    }
-    footer {
-      font-size: 0.9rem;
-      color: #666;
-      margin-top: 40px;
-      padding-bottom: 20px;
-    }
+    body{font-family:Arial, sans-serif;background:#f3f7fb;margin:0;padding:20px;color:#222}
+    .card{background:white;padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06);margin:12px 0}
+    .grid{display:flex;flex-wrap:wrap;gap:12px}
+    .box{flex:1 1 180px;padding:12px;border-radius:10px;text-align:center}
+    .big{font-size:1.6rem;font-weight:700}
+    .controls{margin-top:10px}
+    button{padding:8px 12px;border:none;border-radius:8px;cursor:pointer}
+    .row{display:flex;gap:8px;align-items:center}
+    #login {max-width:360px;margin:40px auto}
+    input{padding:10px;border-radius:8px;border:1px solid #ccc;width:100%;box-sizing:border-box;margin:8px 0}
   </style>
 </head>
 <body>
-  <h1>🌱 ESP32 LoRa Irigasi Dashboard</h1>
+  <h1>🌱 Dashboard Irigasi (GitHub Pages)</h1>
 
-  <!-- LOGIN FORM -->
-  <div id="loginForm">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="loginBtn">Login</button>
+  <div id="login" class="card">
+    <h3>Login with Email</h3>
+    <input id="email" placeholder="Email" type="email" />
+    <input id="password" placeholder="Password" type="password" />
+    <div class="row">
+      <button id="btnLogin">Login</button>
+      <button id="btnCreate">Create Account</button>
+    </div>
+    <p id="loginStatus"></p>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard">
-    <div class="sensor-grid">
-      <div class="card"><h2>Suhu</h2><div class="value" id="tempVal">-- °C</div></div>
-      <div class="card"><h2>Kelembapan</h2><div class="value" id="humVal">-- %</div></div>
-      <div class="card"><h2>Soil 1</h2><div class="value" id="soil1">-- %</div></div>
-      <div class="card"><h2>Soil 2</h2><div class="value" id="soil2">-- %</div></div>
-      <div class="card"><h2>Soil 3</h2><div class="value" id="soil3">-- %</div></div>
-      <div class="card"><h2>Soil 4</h2><div class="value" id="soil4">-- %</div></div>
-      <div class="card"><h2>Status Pompa</h2><div class="value" id="pumpStatus">--</div></div>
-      <div class="card"><h2>Mode Kontrol</h2><div class="value" id="modeStatus">--</div></div>
+  <div id="app" style="display:none;">
+    <div class="card">
+      <div class="grid">
+        <div class="box"><div>Temperature</div><div class="big" id="temp">-- °C</div></div>
+        <div class="box"><div>Humidity</div><div class="big" id="hum">-- %</div></div>
+        <div class="box"><div>Soil Avg</div><div class="big" id="soil">-- %</div></div>
+        <div class="box"><div>Pompa</div><div class="big" id="pump">--</div></div>
+      </div>
+      <div class="controls">
+        <button id="btnPumpToggle">Toggle Pump</button>
+        <button id="btnModeToggle">Toggle Mode</button>
+        <button id="btnLogout" style="float:right">Logout</button>
+      </div>
     </div>
 
-    <div class="control-section">
-      <button id="pumpBtn">Pompa: OFF</button>
-      <button id="modeBtn">Mode: AUTO</button>
-      <button id="logoutBtn">Logout</button>
+    <div class="card">
+      <h3>Raw sensor</h3>
+      <pre id="raw">no data</pre>
     </div>
   </div>
 
-  <footer>© 2025 Sistem Irigasi Otomatis | ESP32 LoRa + Firebase</footer>
-
-  <!-- Firebase SDK -->
+  <!-- Firebase JS SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <script>
-    // ====== KONFIGURASI FIREBASE ======
+    // ====== CONFIGURE HERE ======
     const firebaseConfig = {
-      	apiKey: "AIzaSyDkbJKZodfTtqqyeU1E6jaSsi7qECSkk1U",
-  	authDomain: "sitem-irigasi-tetes.firebaseapp.com",
-  	databaseURL: "https://sitem-irigasi-tetes-default-rtdb.asia-southeast1.firebasedatabase.app",
-  	projectId: "sitem-irigasi-tetes",
-  	storageBucket: "sitem-irigasi-tetes.firebasestorage.app",
-  	messagingSenderId: "303828389729",
-  	appId: "1:303828389729:web:84ec76082fd236f886ff20",
-  	measurementId: "G-W9L7G4BCBG",
+      apiKey: "REPLACE_APIKEY",
+      authDomain: "REPLACE_AUTHDOMAIN",
+      databaseURL: "https://sitem-irigasi-tetes-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sitem-irigasi-tetes",
+      storageBucket: "",
+      messagingSenderId: "",
+      appId: ""
     };
+    // ============================
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
-    // ====== LOGIN SEDERHANA ======
-    const allowedEmail = "muchtar021@gmail.com";
-    const allowedPassword = "12345678";
+    const loginDiv = document.getElementById('login');
+    const appDiv = document.getElementById('app');
 
-    const loginForm = document.getElementById("loginForm");
-    const dashboard = document.getElementById("dashboard");
+    const tempEl = document.getElementById('temp');
+    const humEl  = document.getElementById('hum');
+    const soilEl = document.getElementById('soil');
+    const pumpEl = document.getElementById('pump');
+    const rawEl  = document.getElementById('raw');
 
-    document.getElementById("loginBtn").onclick = () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (email === allowedEmail && password === allowedPassword) {
-        loginForm.style.display = "none";
-        dashboard.style.display = "block";
-        loadData();
-      } else {
-        alert("Email atau password salah!");
+    document.getElementById('btnLogin').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const pass  = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        document.getElementById('loginStatus').innerText = 'Login berhasil';
+      } catch (e) {
+        document.getElementById('loginStatus').innerText = 'Login error: ' + e.message;
       }
     };
 
-    document.getElementById("logoutBtn").onclick = () => {
-      loginForm.style.display = "block";
-      dashboard.style.display = "none";
+    document.getElementById('btnCreate').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const pass  = document.getElementById('password').value;
+      try {
+        await auth.createUserWithEmailAndPassword(email, pass);
+        document.getElementById('loginStatus').innerText = 'Akun dibuat, silakan login';
+      } catch (e) {
+        document.getElementById('loginStatus').innerText = 'Error: ' + e.message;
+      }
     };
 
-    // ====== FUNGSI PEMBACAAN DATA ======
-    function loadData() {
-      const ref = db.ref("SensorData");
-      ref.on("value", (snap) => {
-        const d = snap.val();
-        if (!d) return;
-        document.getElementById("tempVal").innerText = d.temperature + " °C";
-        document.getElementById("humVal").innerText = d.humidity + " %";
-        document.getElementById("soil1").innerText = d.soil1 + " %";
-        document.getElementById("soil2").innerText = d.soil2 + " %";
-        document.getElementById("soil3").innerText = d.soil3 + " %";
-        document.getElementById("soil4").innerText = d.soil4 + " %";
-        document.getElementById("pumpStatus").innerText = d.pump === 1 ? "ON" : "OFF";
-        document.getElementById("modeStatus").innerText = d.mode === "AUTO" ? "AUTO" : "MANUAL";
+    document.getElementById('btnLogout').onclick = () => auth.signOut();
 
-        const pumpBtn = document.getElementById("pumpBtn");
-        pumpBtn.classList.toggle("on", d.pump === 1);
-        pumpBtn.innerText = "Pompa: " + (d.pump === 1 ? "ON" : "OFF");
-        document.getElementById("modeBtn").innerText = "Mode: " + d.mode;
-      });
-    }
+    // Realtime listener for data
+    let sensorRef = db.ref('/SensorData');
+    sensorRef.on('value', snap => {
+      const v = snap.val() || {};
+      tempEl.innerText = (v.temperature || '--') + ' °C';
+      humEl.innerText  = (v.humidity || '--') + ' %';
+      const s1 = parseFloat(v.soil1||0), s2 = parseFloat(v.soil2||0), s3 = parseFloat(v.soil3||0), s4 = parseFloat(v.soil4||0);
+      const avg = (s1+s2+s3+s4)/ ( (s1||s2||s3||s4) ? 4:1 );
+      soilEl.innerText = (isNaN(avg)?'--':avg.toFixed(0)) + ' %';
+      pumpEl.innerText = (v.pump==1 || v.pump=='1' || (v.pump && (v.pump+"").toUpperCase()=="ON")) ? 'ON' : 'OFF';
+      rawEl.innerText = JSON.stringify(v, null, 2);
+    });
 
-    // ====== FUNGSI KONTROL ======
-    const pumpBtn = document.getElementById("pumpBtn");
-    const modeBtn = document.getElementById("modeBtn");
-
-    pumpBtn.onclick = () => {
-      const ref = db.ref("SensorData/pump");
-      ref.get().then(snap => {
-        const state = snap.val() === 1 ? 0 : 1;
-        ref.set(state);
-      });
+    // control buttons (write to Firebase)
+    document.getElementById('btnPumpToggle').onclick = async () => {
+      const snap = await sensorRef.child('pump').get();
+      let current = snap.exists() ? snap.val() : 0;
+      // toggle: if 'ON'/'1' -> set 0 else 1
+      let newVal = (current==1 || (""+current).toUpperCase()=="ON") ? 0 : 1;
+      await sensorRef.child('pump').set(newVal);
     };
 
-    modeBtn.onclick = () => {
-      const ref = db.ref("SensorData/mode");
-      ref.get().then(snap => {
-        const current = snap.val() === "AUTO" ? "MANUAL" : "AUTO";
-        ref.set(current);
-      });
+    document.getElementById('btnModeToggle').onclick = async () => {
+      const snap = await sensorRef.child('mode').get();
+      let cur = snap.exists() ? snap.val() : 'AUTO';
+      let next = (cur === 'AUTO') ? 'MANUAL' : 'AUTO';
+      await sensorRef.child('mode').set(next);
     };
+
+    // auth state
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        loginDiv.style.display = 'none';
+        appDiv.style.display = 'block';
+      } else {
+        loginDiv.style.display = 'block';
+        appDiv.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>
