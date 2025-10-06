@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>ESP32 LoRa Irigasi Dashboard</title>
+  <title>🌱 ESP32 LoRa Irigasi Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -12,17 +14,20 @@
       margin: 0;
       padding: 0;
     }
+
     h1 {
       margin-top: 30px;
       font-size: 1.8rem;
       color: #333;
     }
+
     .sensor-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       margin-top: 25px;
     }
+
     .card {
       background: white;
       border-radius: 15px;
@@ -31,19 +36,23 @@
       margin: 10px;
       width: 200px;
     }
+
     .card h2 {
       margin: 5px 0;
       font-size: 1.1rem;
       color: #444;
     }
+
     .card .value {
       font-size: 1.8rem;
       color: #0078d7;
       font-weight: bold;
     }
+
     .control-section {
       margin: 30px 0;
     }
+
     .control-section button {
       padding: 10px 25px;
       font-size: 16px;
@@ -54,21 +63,12 @@
       margin: 8px;
       transition: opacity 0.3s ease;
     }
-    #pumpBtn {
-      background-color: #0078d7;
-    }
-    #pumpBtn.on {
-      background-color: #43a047;
-    }
-    #modeBtn {
-      background-color: #f57c00;
-    }
-    #logoutBtn {
-      background-color: #555;
-    }
-    button:hover {
-      opacity: 0.85;
-    }
+
+    #pumpBtn { background-color: #0078d7; }
+    #pumpBtn.on { background-color: #43a047; }
+    #modeBtn { background-color: #f57c00; }
+    #logoutBtn { background-color: #555; }
+    button:hover { opacity: 0.85; }
 
     /* LOGIN FORM */
     #loginForm {
@@ -78,16 +78,35 @@
       padding: 30px 25px;
       border-radius: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: left;
     }
+
+    #loginForm h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .input-group {
+      position: relative;
+      margin: 15px 0;
+    }
+
+    .input-group i {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      color: #888;
+    }
+
     #loginForm input {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
+      padding: 12px 12px 12px 40px;
       border: 1.5px solid #ccc;
       border-radius: 10px;
       font-size: 1rem;
       box-sizing: border-box;
     }
+
     #loginForm button {
       width: 100%;
       background-color: #0078d7;
@@ -98,14 +117,11 @@
       border-radius: 10px;
       cursor: pointer;
     }
-    #loginForm button:hover {
-      background-color: #005bb5;
-    }
 
-    #dashboard {
-      display: none;
-      padding-bottom: 40px;
-    }
+    #loginForm button:hover { background-color: #005bb5; }
+
+    #dashboard { display: none; padding-bottom: 40px; }
+
     footer {
       font-size: 0.9rem;
       color: #666;
@@ -119,9 +135,16 @@
 
   <!-- LOGIN FORM -->
   <div id="loginForm">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="loginBtn">Login</button>
+    <h2><i class="fa-solid fa-lock"></i> Login Akses</h2>
+    <div class="input-group">
+      <i class="fa-solid fa-envelope"></i>
+      <input type="email" id="email" placeholder="Email" required />
+    </div>
+    <div class="input-group">
+      <i class="fa-solid fa-key"></i>
+      <input type="password" id="password" placeholder="Password" required />
+    </div>
+    <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -148,50 +171,57 @@
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <script>
     // ====== KONFIGURASI FIREBASE ======
-   const firebaseConfig = {
-    apiKey: "AIzaSyAVPrLQPZKo6jyIdSsCQvVHdYlr5hfRVSg",
-    authDomain: "sitem-irigasi-tetes-a1675.firebaseapp.com",
-    databaseURL: "https://sitem-irigasi-tetes-a1675-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "sitem-irigasi-tetes-a1675",
-    storageBucket: "sitem-irigasi-tetes-a1675.firebasestorage.app",
-    messagingSenderId: "1042595663799",
-    appId: "1:1042595663799:web:0287b78bf833f2b5992232"
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5bF_zHx2dkwNqy295jEn2oZ1SLKz_Cfc",
+      authDomain: "sitem-irigasi-tetes-a1675.firebaseapp.com",
+      databaseURL: "https://sitem-irigasi-tetes-a1675-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sitem-irigasi-tetes-a1675",
+      storageBucket: "sitem-irigasi-tetes-a1675.firebasestorage.app",
+      messagingSenderId: "1042595663799",
+      appId: "1:1042595663799:web:0287b78bf833f2b5992232"
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
-
-    // ====== LOGIN SEDERHANA ======
-    const allowedEmail = "muchtarumar021@gmail.com";
-    const allowedPassword = "moisture1423";
 
     const loginForm = document.getElementById("loginForm");
     const dashboard = document.getElementById("dashboard");
 
-    document.getElementById("loginBtn").onclick = () => {
+    // ====== LOGIN VIA FIREBASE AUTH ======
+    document.getElementById("loginBtn").onclick = async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        console.log("Login sukses!");
+      } catch (error) {
+        alert("Login gagal: " + error.message);
+      }
+    };
 
-      if (email === allowedEmail && password === allowedPassword) {
+    // ====== STATUS AUTENTIKASI ======
+    auth.onAuthStateChanged((user) => {
+      if (user) {
         loginForm.style.display = "none";
         dashboard.style.display = "block";
         loadData();
       } else {
-        alert("Email atau password salah!");
+        loginForm.style.display = "block";
+        dashboard.style.display = "none";
       }
-    };
+    });
 
     document.getElementById("logoutBtn").onclick = () => {
-      loginForm.style.display = "block";
-      dashboard.style.display = "none";
+      auth.signOut();
     };
 
-    // ====== FUNGSI PEMBACAAN DATA ======
+    // ====== PEMBACAAN DATA REALTIME ======
     function loadData() {
       const ref = db.ref("SensorData");
       ref.on("value", (snap) => {
@@ -213,7 +243,7 @@
       });
     }
 
-    // ====== FUNGSI KONTROL ======
+    // ====== KONTROL TOMBOL ======
     const pumpBtn = document.getElementById("pumpBtn");
     const modeBtn = document.getElementById("modeBtn");
 
@@ -235,8 +265,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
