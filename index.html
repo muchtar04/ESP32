@@ -2,75 +2,28 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>🌱 ESP32 LoRa Irigasi Dashboard</title>
+  <title>🌿 ESP32 LoRa Irigasi Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
     body {
       font-family: 'Poppins', sans-serif;
-      text-align: center;
       background-color: #f3f7fb;
       margin: 0;
       padding: 0;
-    }
-
-    h1 {
-      margin-top: 30px;
-      font-size: 1.8rem;
+      text-align: center;
       color: #333;
     }
 
-    .sensor-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+    h1 {
+      font-size: 26px;
       margin-top: 25px;
+      margin-bottom: 10px;
+      color: #222;
     }
 
-    .card {
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin: 10px;
-      width: 200px;
-    }
-
-    .card h2 {
-      margin: 5px 0;
-      font-size: 1.1rem;
-      color: #444;
-    }
-
-    .card .value {
-      font-size: 1.8rem;
-      color: #0078d7;
-      font-weight: bold;
-    }
-
-    .control-section {
-      margin: 30px 0;
-    }
-
-    .control-section button {
-      padding: 10px 25px;
-      font-size: 16px;
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      margin: 8px;
-      transition: opacity 0.3s ease;
-    }
-
-    #pumpBtn { background-color: #0078d7; }
-    #pumpBtn.on { background-color: #43a047; }
-    #modeBtn { background-color: #f57c00; }
-    #logoutBtn { background-color: #555; }
-    button:hover { opacity: 0.85; }
-
-    /* LOGIN FORM */
+    /* ===== LOGIN ===== */
     #loginForm {
       max-width: 400px;
       margin: 80px auto;
@@ -120,20 +73,149 @@
 
     #loginForm button:hover { background-color: #005bb5; }
 
-    #dashboard { display: none; padding-bottom: 40px; }
+    /* ===== STRUKTUR DASHBOARD ===== */
+    #dashboard { display: none; }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 60px;
+      margin: 25px 0;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      width: 220px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.25s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.15);
+    }
+
+    .label {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    /* ===== GAUGE ===== */
+    .gauge {
+      position: relative;
+      width: 120px;
+      height: 70px;
+      margin: 5px auto 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .gauge svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .gauge-value {
+      font-size: 22px;
+      font-weight: bold;
+      color: #007bff;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translate(-50%, 45%);
+    }
+
+    /* ===== GAUGE LINGKARAN ===== */
+    .radial-gauge {
+      position: relative;
+      width: 140px;
+      height: 140px;
+      margin: 10px auto;
+    }
+
+    .radial-gauge svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .radial-gauge .gauge-value {
+      position: absolute;
+      top: 60%;
+      left: 55%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    /* ===== FOOTER BUTTON ===== */
+    .footer-btns {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 40px 0;
+    }
+
+    .footer-btns button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .green { background-color: #28a745; }
+    .orange { background-color: #ff7f0e; }
+    .gray { background-color: #444; }
+
+    .footer-btns button:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
 
     footer {
       font-size: 0.9rem;
       color: #666;
-      margin-top: 40px;
-      padding-bottom: 20px;
+      margin-top: 30px;
+      padding-bottom: 30px;
     }
   </style>
 </head>
-<body>
-  <h1>🌱 ESP32 LoRa Irigasi Dashboard</h1>
 
-  <!-- LOGIN FORM -->
+<body>
+  <h1>🌿 ESP32 LoRa Irigasi Dashboard</h1>
+
+  <!-- ===== LOGIN FORM ===== -->
   <div id="loginForm">
     <h2><i class="fa-solid fa-lock"></i> Login Akses</h2>
     <div class="input-group">
@@ -147,35 +229,64 @@
     <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- ===== DASHBOARD ===== -->
   <div id="dashboard">
-    <div class="sensor-grid">
-      <div class="card"><h2>Suhu</h2><div class="value" id="tempVal">-- °C</div></div>
-      <div class="card"><h2>Kelembapan</h2><div class="value" id="humVal">-- %</div></div>
-      <div class="card"><h2>Soil 1</h2><div class="value" id="soil1">-- %</div></div>
-      <div class="card"><h2>Soil 2</h2><div class="value" id="soil2">-- %</div></div>
-      <div class="card"><h2>Soil 3</h2><div class="value" id="soil3">-- %</div></div>
-      <div class="card"><h2>Soil 4</h2><div class="value" id="soil4">-- %</div></div>
-      <div class="card"><h2>Status Pompa</h2><div class="value" id="pumpStatus">--</div></div>
-      <div class="card"><h2>Mode Kontrol</h2><div class="value" id="modeStatus">--</div></div>
+    <div class="main-container">
+      <div class="row">
+        <div class="card">
+          <div class="label">Temperatur</div>
+          <div class="value" id="temp">-- °C</div>
+        </div>
+        <div class="card">
+          <div class="label">Kelembaban</div>
+          <div class="value" id="hum">-- %</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="card"><div class="label">Soil 1</div><div class="gauge" id="soil1"></div></div>
+        <div class="card"><div class="label">Soil 2</div><div class="gauge" id="soil2"></div></div>
+      </div>
+      <div class="row">
+        <div class="card"><div class="label">Soil 3</div><div class="gauge" id="soil3"></div></div>
+        <div class="card"><div class="label">Soil 4</div><div class="gauge" id="soil4"></div></div>
+      </div>
+
+      <div class="row" style="margin-top: 40px;">
+        <div class="card" style="width: 480px;">
+          <div class="label">Rata-rata Soil</div>
+          <div class="radial-gauge" id="avgSoilGauge"></div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 40px;">
+        <div class="card">
+          <div class="label">Status Pompa</div>
+          <div class="value" id="pumpStatus">--</div>
+        </div>
+        <div class="card">
+          <div class="label">Status Mode</div>
+          <div class="value" id="modeStatus">--</div>
+        </div>
+      </div>
     </div>
 
-    <div class="control-section">
-      <button id="pumpBtn">Pompa: OFF</button>
-      <button id="modeBtn">Mode: AUTO</button>
-      <button id="logoutBtn">Logout</button>
+    <div class="footer-btns">
+      <button class="green" id="pumpBtn">Pompa: OFF</button>
+      <button class="orange" id="modeBtn">Mode: AUTO</button>
+      <button class="gray" id="logoutBtn">Logout</button>
     </div>
   </div>
 
   <footer>© 2025 Sistem Irigasi Otomatis | ESP32 LoRa + Firebase</footer>
 
-  <!-- Firebase SDK -->
+  <!-- ===== FIREBASE SDK ===== -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <script>
-    // ====== KONFIGURASI FIREBASE ======
+    // ===== KONFIGURASI FIREBASE =====
     const firebaseConfig = {
       apiKey: "AIzaSyAVPrLQPZKo6jyIdSsCQvVHdYlr5hfRVSg",
       authDomain: "sitem-irigasi-tetes-a1675.firebaseapp.com",
@@ -193,19 +304,17 @@
     const loginForm = document.getElementById("loginForm");
     const dashboard = document.getElementById("dashboard");
 
-    // ====== LOGIN VIA FIREBASE AUTH ======
+    // ===== LOGIN =====
     document.getElementById("loginBtn").onclick = async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
       try {
         await auth.signInWithEmailAndPassword(email, password);
-        console.log("Login sukses!");
       } catch (error) {
         alert("Login gagal: " + error.message);
       }
     };
 
-    // ====== STATUS AUTENTIKASI ======
     auth.onAuthStateChanged((user) => {
       if (user) {
         loginForm.style.display = "none";
@@ -217,52 +326,73 @@
       }
     });
 
-    document.getElementById("logoutBtn").onclick = () => {
-      auth.signOut();
-    };
+    document.getElementById("logoutBtn").onclick = () => auth.signOut();
 
-    // ====== PEMBACAAN DATA REALTIME ======
+    // ===== GAGUE GENERATOR =====
+    function createGauge(elementId, value) {
+      const container = document.getElementById(elementId);
+      const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
+      const strokeWidth = 10, r = 40, c = Math.PI * r;
+      const progress = ((100 - value) / 100) * c;
+      container.innerHTML = `
+        <svg viewBox="0 0 100 50">
+          <path d="M10,50 A40,40 0 0,1 90,50" stroke="#e0e0e0" stroke-width="${strokeWidth}" fill="none"/>
+          <path d="M10,50 A40,40 0 0,1 90,50" stroke="${color}" stroke-width="${strokeWidth}" fill="none"
+            stroke-dasharray="${c}" stroke-dashoffset="${progress}">
+          </path>
+        </svg>
+        <div class="gauge-value">${value}%</div>`;
+    }
+
+    function createRadialGauge(elementId, value) {
+      const container = document.getElementById(elementId);
+      const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
+      const strokeWidth = 10, r = 50, c = 2 * Math.PI * r;
+      const offset = ((100 - value) / 100) * c;
+      container.innerHTML = `
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="${r}" stroke="#eee" stroke-width="${strokeWidth}" fill="none"/>
+          <circle cx="60" cy="60" r="${r}" stroke="${color}" stroke-width="${strokeWidth}" fill="none"
+            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}"></circle>
+        </svg>
+        <div class="gauge-value">${value}%</div>`;
+    }
+
+    // ===== LOAD DATA REALTIME =====
     function loadData() {
       const ref = db.ref("SensorData");
       ref.on("value", (snap) => {
         const d = snap.val();
         if (!d) return;
-        document.getElementById("tempVal").innerText = d.temperature + " °C";
-        document.getElementById("humVal").innerText = d.humidity + " %";
-        document.getElementById("soil1").innerText = d.soil1 + " %";
-        document.getElementById("soil2").innerText = d.soil2 + " %";
-        document.getElementById("soil3").innerText = d.soil3 + " %";
-        document.getElementById("soil4").innerText = d.soil4 + " %";
+
+        document.getElementById("temp").innerText = d.temperature + " °C";
+        document.getElementById("hum").innerText = d.humidity + " %";
+
+        const soils = [d.soil1, d.soil2, d.soil3, d.soil4];
+        soils.forEach((v, i) => createGauge(`soil${i + 1}`, v));
+        const avg = Math.round(soils.reduce((a, b) => a + b) / soils.length);
+        createRadialGauge("avgSoilGauge", avg);
+
         document.getElementById("pumpStatus").innerText = d.pump === 1 ? "ON" : "OFF";
-        document.getElementById("modeStatus").innerText = d.mode === "AUTO" ? "AUTO" : "MANUAL";
+        document.getElementById("modeStatus").innerText = d.mode;
 
         const pumpBtn = document.getElementById("pumpBtn");
-        pumpBtn.classList.toggle("on", d.pump === 1);
-        pumpBtn.innerText = "Pompa: " + (d.pump === 1 ? "ON" : "OFF");
-        document.getElementById("modeBtn").innerText = "Mode: " + d.mode;
+        pumpBtn.textContent = "Pompa: " + (d.pump === 1 ? "ON" : "OFF");
+        pumpBtn.classList.toggle("active", d.pump === 1);
+        document.getElementById("modeBtn").textContent = "Mode: " + d.mode;
       });
     }
 
-    // ====== KONTROL TOMBOL ======
-    const pumpBtn = document.getElementById("pumpBtn");
-    const modeBtn = document.getElementById("modeBtn");
-
-    pumpBtn.onclick = () => {
+    // ===== KONTROL =====
+    document.getElementById("pumpBtn").onclick = () => {
       const ref = db.ref("SensorData/pump");
-      ref.get().then(snap => {
-        const state = snap.val() === 1 ? 0 : 1;
-        ref.set(state);
-      });
+      ref.get().then(s => ref.set(s.val() === 1 ? 0 : 1));
     };
 
-    modeBtn.onclick = () => {
+    document.getElementById("modeBtn").onclick = () => {
       const ref = db.ref("SensorData/mode");
-      ref.get().then(snap => {
-        const current = snap.val() === "AUTO" ? "MANUAL" : "AUTO";
-        ref.set(current);
-      });
+      ref.get().then(s => ref.set(s.val() === "AUTO" ? "MANUAL" : "AUTO"));
     };
   </script>
 </body>
 </html>
-
