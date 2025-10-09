@@ -14,6 +14,7 @@
       padding: 0;
       text-align: center;
       color: #333;
+      overflow-x: hidden;
     }
 
     h1 {
@@ -21,6 +22,16 @@
       margin-top: 20px;
       margin-bottom: 15px;
       color: #222;
+    }
+
+    /* ===== ANIMASI HALUS ===== */
+    .fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     /* ===== LOGIN ===== */
@@ -33,6 +44,13 @@
       border-radius: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: left;
+      opacity: 1;
+      transition: opacity 0.6s ease;
+    }
+
+    #loginForm.fade-out {
+      opacity: 0;
+      pointer-events: none;
     }
 
     #loginForm h2 {
@@ -76,7 +94,18 @@
     #loginForm button:hover { background-color: #005bb5; }
 
     /* ===== DASHBOARD ===== */
-    #dashboard { display: none; }
+    #dashboard {
+      display: none;
+      opacity: 0;
+      transform: scale(0.97);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    #dashboard.show {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
 
     .main-container {
       display: flex;
@@ -100,7 +129,6 @@
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
       padding: 20px;
       width: 160px;
-      min-width: 140px;
       height: 150px;
       display: flex;
       flex-direction: column;
@@ -114,17 +142,8 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
     }
 
-    .label {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .value {
-      font-size: 22px;
-      font-weight: bold;
-      color: #007bff;
-    }
+    .label { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .value { font-size: 22px; font-weight: bold; color: #007bff; }
 
     /* ===== GAUGE ===== */
     .gauge {
@@ -145,24 +164,26 @@
       bottom: 0;
       left: 50%;
       transform: translate(-50%, 45%);
+      transition: color 0.5s ease;
     }
 
     /* ===== GAUGE LINGKARAN ===== */
     .radial-gauge {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 180px;
+      height: 180px;
       margin: 5px auto;
     }
 
     .radial-gauge .gauge-value {
       position: absolute;
-      top: 60%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 20px;
+      font-size: 26px;
       font-weight: bold;
       color: #007bff;
+      transition: color 0.5s ease;
     }
 
     /* ===== FOOTER BUTTON ===== */
@@ -182,16 +203,22 @@
       cursor: pointer;
       color: white;
       font-size: 14px;
-      transition: 0.2s;
+      transition: all 0.3s ease;
     }
 
     .green { background-color: #28a745; }
     .orange { background-color: #ff7f0e; }
     .gray { background-color: #444; }
 
-    .footer-btns button:hover {
+    .footer-btns button:hover:not(:disabled) {
       transform: scale(1.05);
       opacity: 0.9;
+    }
+
+    button:disabled {
+      background-color: #888 !important;
+      cursor: not-allowed;
+      opacity: 0.7;
     }
 
     footer {
@@ -200,30 +227,6 @@
       margin-top: 20px;
       padding-bottom: 25px;
     }
-
-    /* ====== RESPONSIVE MODE ====== */
-    @media (max-width: 768px) {
-      .card {
-        width: 45%;
-        min-width: 140px;
-        height: 140px;
-      }
-      .radial-gauge { width: 100px; height: 100px; }
-      h1 { font-size: 20px; }
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        width: 85%;
-        height: 140px;
-      }
-      .value { font-size: 20px; }
-      .label { font-size: 13px; }
-      .radial-gauge { width: 90px; height: 90px; }
-      .footer-btns button {
-        width: 80%;
-      }
-    }
   </style>
 </head>
 
@@ -231,7 +234,7 @@
   <h1>🌿 ESP32 LoRa Irigasi Dashboard</h1>
 
   <!-- LOGIN -->
-  <div id="loginForm">
+  <div id="loginForm" class="fade-in">
     <h2><i class="fa-solid fa-lock"></i> Login Akses</h2>
     <div class="input-group">
       <i class="fa-solid fa-envelope"></i>
@@ -246,7 +249,7 @@
 
   <!-- DASHBOARD -->
   <div id="dashboard">
-    <div class="main-container">
+    <div class="main-container fade-in">
       <div class="row">
         <div class="card"><div class="label">Temperatur</div><div class="value" id="temp">-- °C</div></div>
         <div class="card"><div class="label">Kelembaban</div><div class="value" id="hum">-- %</div></div>
@@ -263,7 +266,7 @@
       </div>
 
       <div class="row">
-        <div class="card" style="width: 90%; max-width: 400px;">
+        <div class="card" style="width: 90%; max-width: 420px;">
           <div class="label">Rata-rata Soil</div>
           <div class="radial-gauge" id="avgSoilGauge"></div>
         </div>
@@ -319,62 +322,81 @@
 
     auth.onAuthStateChanged((user) => {
       if (user) {
-        loginForm.style.display = "none";
-        dashboard.style.display = "block";
+        loginForm.classList.add("fade-out");
+        setTimeout(() => {
+          loginForm.style.display = "none";
+          dashboard.classList.add("show");
+        }, 600);
         loadData();
       } else {
+        dashboard.classList.remove("show");
         loginForm.style.display = "block";
-        dashboard.style.display = "none";
+        loginForm.classList.remove("fade-out");
       }
     });
 
     document.getElementById("logoutBtn").onclick = () => auth.signOut();
 
-    // ===== GAGUE =====
-    function createGauge(elementId, value) {
-      const container = document.getElementById(elementId);
+    // ===== GAUGE =====
+    function createGauge(id, value) {
+      const el = document.getElementById(id);
       const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
-      const strokeWidth = 10, r = 40, c = Math.PI * r;
-      const progress = ((100 - value) / 100) * c;
-      container.innerHTML = `
+      const r = 40, c = Math.PI * r;
+      const offset = ((100 - value) / 100) * c;
+      el.innerHTML = `
         <svg viewBox="0 0 100 50">
-          <path d="M10,50 A40,40 0 0,1 90,50" stroke="#e0e0e0" stroke-width="${strokeWidth}" fill="none"/>
-          <path d="M10,50 A40,40 0 0,1 90,50" stroke="${color}" stroke-width="${strokeWidth}" fill="none"
-            stroke-dasharray="${c}" stroke-dashoffset="${progress}"></path>
+          <path d="M10,50 A40,40 0 0,1 90,50" stroke="#e0e0e0" stroke-width="10" fill="none"/>
+          <path d="M10,50 A40,40 0 0,1 90,50" stroke="${color}" stroke-width="10" fill="none"
+            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}">
+            <animate attributeName="stroke-dashoffset" to="${offset}" dur="0.8s" fill="freeze" />
+          </path>
         </svg>
-        <div class="gauge-value">${value}%</div>`;
+        <div class="gauge-value" style="color:${color};">${value}%</div>`;
     }
 
-    function createRadialGauge(elementId, value) {
-      const container = document.getElementById(elementId);
+    function createRadialGauge(id, value) {
+      const el = document.getElementById(id);
       const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
-      const strokeWidth = 10, r = 50, c = 2 * Math.PI * r;
+      const r = 50, c = 2 * Math.PI * r;
       const offset = ((100 - value) / 100) * c;
-      container.innerHTML = `
+      el.innerHTML = `
         <svg viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="${r}" stroke="#eee" stroke-width="${strokeWidth}" fill="none"/>
-          <circle cx="60" cy="60" r="${r}" stroke="${color}" stroke-width="${strokeWidth}" fill="none"
-            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}"></circle>
+          <circle cx="60" cy="60" r="${r}" stroke="#eee" stroke-width="10" fill="none"/>
+          <circle cx="60" cy="60" r="${r}" stroke="${color}" stroke-width="10" fill="none"
+            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}">
+            <animate attributeName="stroke-dashoffset" to="${offset}" dur="0.8s" fill="freeze" />
+          </circle>
         </svg>
-        <div class="gauge-value">${value}%</div>`;
+        <div class="gauge-value" style="color:${color};">${value}%</div>`;
     }
 
     // ===== LOAD DATA =====
     function loadData() {
-      const ref = db.ref("SensorData");
-      ref.on("value", (snap) => {
+      db.ref("SensorData").on("value", (snap) => {
         const d = snap.val();
         if (!d) return;
-        document.getElementById("temp").innerText = d.temperature + " °C";
-        document.getElementById("hum").innerText = d.humidity + " %";
+        document.getElementById("temp").innerText = `${d.temperature} °C`;
+        document.getElementById("hum").innerText = `${d.humidity} %`;
+
         const soils = [d.soil1, d.soil2, d.soil3, d.soil4];
         soils.forEach((v, i) => createGauge(`soil${i + 1}`, v));
-        const avg = Math.round(soils.reduce((a, b) => a + b) / soils.length);
-        createRadialGauge("avgSoilGauge", avg);
+        createRadialGauge("avgSoilGauge", Math.round(soils.reduce((a, b) => a + b) / soils.length));
+
+        const pumpBtn = document.getElementById("pumpBtn");
+        const modeBtn = document.getElementById("modeBtn");
+
         document.getElementById("pumpStatus").innerText = d.pump === 1 ? "ON" : "OFF";
         document.getElementById("modeStatus").innerText = d.mode;
-        document.getElementById("pumpBtn").textContent = "Pompa: " + (d.pump === 1 ? "ON" : "OFF");
-        document.getElementById("modeBtn").textContent = "Mode: " + d.mode;
+
+        // Warna tombol dinamis
+        pumpBtn.textContent = `Pompa: ${d.pump === 1 ? "ON" : "OFF"}`;
+        pumpBtn.style.backgroundColor = d.pump === 1 ? "#28a745" : "#6c757d";
+
+        modeBtn.textContent = `Mode: ${d.mode}`;
+        modeBtn.style.backgroundColor = d.mode === "AUTO" ? "#ff7f0e" : "#17a2b8";
+
+        // Disable pompa saat mode AUTO
+        pumpBtn.disabled = d.mode === "AUTO";
       });
     }
 
