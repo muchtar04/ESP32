@@ -2,9 +2,10 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>🌿 ESP32 LoRa Irigasi Dashboard</title>
+  <title>🌿 DASHBOARD SISTEM IRIGASI TETES💧</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
@@ -14,21 +15,12 @@
       padding: 0;
       text-align: center;
       color: #333;
-      overflow-x: hidden;
     }
 
-    h1 {
-      font-size: 22px;
-      margin-top: 20px;
-      margin-bottom: 15px;
-      color: #222;
-    }
+    h1 { font-size: 22px; margin-top: 20px; color: #222; }
 
-    /* ===== ANIMASI HALUS ===== */
-    .fade-in {
-      animation: fadeIn 0.8s ease forwards;
-    }
-
+    /* Animasi transisi fade umum */
+    .fade-in { animation: fadeIn 0.8s ease forwards; }
     @keyframes fadeIn {
       from { opacity: 0; transform: scale(0.97); }
       to { opacity: 1; transform: scale(1); }
@@ -44,32 +36,14 @@
       border-radius: 15px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       text-align: left;
-      opacity: 1;
       transition: opacity 0.6s ease;
     }
 
-    #loginForm.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
+    #loginForm.fade-out { opacity: 0; pointer-events: none; }
+    #loginForm h2 { text-align: center; color: #333; font-size: 20px; }
 
-    #loginForm h2 {
-      text-align: center;
-      color: #333;
-      font-size: 20px;
-    }
-
-    .input-group {
-      position: relative;
-      margin: 15px 0;
-    }
-
-    .input-group i {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      color: #888;
-    }
+    .input-group { position: relative; margin: 15px 0; }
+    .input-group i { position: absolute; top: 12px; left: 12px; color: #888; }
 
     #loginForm input {
       width: 100%;
@@ -89,6 +63,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      transition: background 0.6s ease;
     }
 
     #loginForm button:hover { background-color: #005bb5; }
@@ -100,12 +75,7 @@
       transform: scale(0.97);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-
-    #dashboard.show {
-      display: block;
-      opacity: 1;
-      transform: scale(1);
-    }
+    #dashboard.show { display: block; opacity: 1; transform: scale(1); }
 
     .main-container {
       display: flex;
@@ -123,18 +93,25 @@
       margin: 20px 0;
     }
 
+    /* ===== CARD ===== */
     .card {
       background: #ffffff;
       border-radius: 18px;
       box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
       padding: 20px;
-      width: 160px;
-      height: 150px;
+      width: 170px;
+      height: 180px;
+      text-align: center;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
-      transition: transform 0.25s ease, box-shadow 0.3s ease;
+      transition: background-color 0.8s ease, box-shadow 0.4s ease, transform 0.3s ease, color 0.6s ease;
+    }
+
+    .card.small {
+      width: 130px;
+      height: 90px;
+      padding: 10px;
     }
 
     .card:hover {
@@ -142,51 +119,38 @@
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
     }
 
-    .label { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-    .value { font-size: 22px; font-weight: bold; color: #007bff; }
+    .label { font-size: 14px; font-weight: 600; margin-bottom: 6px; transition: color 0.6s ease; }
 
-    /* ===== GAUGE ===== */
-    .gauge {
-      position: relative;
-      width: 90px;
-      height: 50px;
-      margin: 5px auto 0;
+    .value {
+      font-size: clamp(18px, 4vw, 28px);
+      font-weight: 700;
+      line-height: 1.2;
+      flex-grow: 1;
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: flex-end;
+      transition: color 0.6s ease, transform 0.4s ease;
     }
 
-    .gauge-value {
-      font-size: 16px;
-      font-weight: bold;
-      color: #007bff;
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translate(-50%, 45%);
-      transition: color 0.5s ease;
+    .value.updated {
+      transform: scale(1.1);
+      color: #ffcc00;
     }
 
-    /* ===== GAUGE LINGKARAN ===== */
-    .radial-gauge {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 5px auto;
+    canvas { width: 100%; height: 120px; }
+
+    /* ===== GAUGE BESAR ===== */
+    .big-gauge {
+      width: 260px;
+      height: 260px;
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      transition: background-color 0.8s ease;
     }
 
-    .radial-gauge .gauge-value {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 26px;
-      font-weight: bold;
-      color: #007bff;
-      transition: color 0.5s ease;
-    }
-
-    /* ===== FOOTER BUTTON ===== */
+    /* ===== TOMBOL FOOTER ===== */
     .footer-btns {
       display: flex;
       justify-content: center;
@@ -203,35 +167,26 @@
       cursor: pointer;
       color: white;
       font-size: 14px;
-      transition: all 0.3s ease;
+      transition: background-color 0.6s ease, transform 0.3s ease, box-shadow 0.6s ease;
+    }
+
+    .footer-btns button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
     }
 
     .green { background-color: #28a745; }
     .orange { background-color: #ff7f0e; }
-    .gray { background-color: #444; }
+    .gray { background-color: #555; }
+    .blue { background-color: #007bff; }
 
-    .footer-btns button:hover:not(:disabled) {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
+    .locked { opacity: 0.6; cursor: not-allowed; }
 
-    button:disabled {
-      background-color: #888 !important;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    footer {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 20px;
-      padding-bottom: 25px;
-    }
+    footer { font-size: 0.85rem; color: #666; margin-top: 20px; padding-bottom: 25px; }
   </style>
 </head>
-
 <body>
-  <h1>🌿 ESP32 LoRa Irigasi Dashboard</h1>
+  <h1>🌿 DASHBOARD SISTEM IRIGASI TETES💧</h1>
 
   <!-- LOGIN -->
   <div id="loginForm" class="fade-in">
@@ -251,43 +206,39 @@
   <div id="dashboard">
     <div class="main-container fade-in">
       <div class="row">
-        <div class="card"><div class="label">Temperatur</div><div class="value" id="temp">-- °C</div></div>
-        <div class="card"><div class="label">Kelembaban</div><div class="value" id="hum">-- %</div></div>
+        <div class="card small" id="tempCard"><div class="label">Temperatur</div><div id="temp" class="value">-- °C</div></div>
+        <div class="card small" id="humCard"><div class="label">Kelembaban</div><div id="hum" class="value">-- %</div></div>
       </div>
 
       <div class="row">
-        <div class="card"><div class="label">Soil 1</div><div class="gauge" id="soil1"></div></div>
-        <div class="card"><div class="label">Soil 2</div><div class="gauge" id="soil2"></div></div>
+        <div class="card"><div class="label">Soil 1</div><canvas id="soil1"></canvas></div>
+        <div class="card"><div class="label">Soil 2</div><canvas id="soil2"></canvas></div>
+      </div>
+      <div class="row">
+        <div class="card"><div class="label">Soil 3</div><canvas id="soil3"></canvas></div>
+        <div class="card"><div class="label">Soil 4</div><canvas id="soil4"></canvas></div>
+      </div>
+
+      <div class="big-gauge">
+        <div class="label">Rata-rata Soil</div>
+        <canvas id="avgSoil"></canvas>
       </div>
 
       <div class="row">
-        <div class="card"><div class="label">Soil 3</div><div class="gauge" id="soil3"></div></div>
-        <div class="card"><div class="label">Soil 4</div><div class="gauge" id="soil4"></div></div>
-      </div>
-
-      <div class="row">
-        <div class="card" style="width: 90%; max-width: 420px;">
-          <div class="label">Rata-rata Soil</div>
-          <div class="radial-gauge" id="avgSoilGauge"></div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="card"><div class="label">Status Pompa</div><div class="value" id="pumpStatus">--</div></div>
-        <div class="card"><div class="label">Status Mode</div><div class="value" id="modeStatus">--</div></div>
+        <div class="card small"><div class="label">Status Pompa</div><div id="pumpStatus" class="value">--</div></div>
+        <div class="card small"><div class="label">Status Mode</div><div id="modeStatus" class="value">--</div></div>
       </div>
     </div>
 
     <div class="footer-btns">
-      <button class="green" id="pumpBtn">Pompa: OFF</button>
+      <button class="gray" id="pumpBtn">Pompa: OFF</button>
       <button class="orange" id="modeBtn">Mode: AUTO</button>
       <button class="gray" id="logoutBtn">Logout</button>
     </div>
   </div>
 
-  <footer>© 2025 Sistem Irigasi Otomatis | ESP32 LoRa + Firebase</footer>
+  <footer>© Sistem Irigasi Tetes Otomatis 2025 | muchtar umar</footer>
 
-  <!-- FIREBASE SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
@@ -337,50 +288,99 @@
 
     document.getElementById("logoutBtn").onclick = () => auth.signOut();
 
-    // ===== GAUGE =====
-    function createGauge(id, value) {
-      const el = document.getElementById(id);
-      const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
-      const r = 40, c = Math.PI * r;
-      const offset = ((100 - value) / 100) * c;
-      el.innerHTML = `
-        <svg viewBox="0 0 100 50">
-          <path d="M10,50 A40,40 0 0,1 90,50" stroke="#e0e0e0" stroke-width="10" fill="none"/>
-          <path d="M10,50 A40,40 0 0,1 90,50" stroke="${color}" stroke-width="10" fill="none"
-            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}">
-            <animate attributeName="stroke-dashoffset" to="${offset}" dur="0.8s" fill="freeze" />
-          </path>
-        </svg>
-        <div class="gauge-value" style="color:${color};">${value}%</div>`;
+    const gauges = {};
+
+    function getGradientColor(ctx, value) {
+      const gradient = ctx.createLinearGradient(0, 0, 200, 0);
+      gradient.addColorStop(0, "#ff0000");
+      gradient.addColorStop(0.5, "#fff200");
+      gradient.addColorStop(1, "#00ff00");
+      return gradient;
     }
 
-    function createRadialGauge(id, value) {
-      const el = document.getElementById(id);
-      const color = value < 30 ? "#e74c3c" : value < 80 ? "#f1c40f" : "#2ecc71";
-      const r = 50, c = 2 * Math.PI * r;
-      const offset = ((100 - value) / 100) * c;
-      el.innerHTML = `
-        <svg viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r="${r}" stroke="#eee" stroke-width="10" fill="none"/>
-          <circle cx="60" cy="60" r="${r}" stroke="${color}" stroke-width="10" fill="none"
-            stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${offset}">
-            <animate attributeName="stroke-dashoffset" to="${offset}" dur="0.8s" fill="freeze" />
-          </circle>
-        </svg>
-        <div class="gauge-value" style="color:${color};">${value}%</div>`;
+    function createGaugeChart(id, value, fullCircle = false) {
+      const ctx = document.getElementById(id).getContext('2d');
+      gauges[id] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [value, 100 - value],
+            backgroundColor: [getGradientColor(ctx, value), '#e6e6e6'],
+            borderWidth: 0,
+            circumference: fullCircle ? 360 : 270,
+            rotation: fullCircle ? -90 : 225,
+            cutout: '75%',
+            borderRadius: 50,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          animation: { animateRotate: true, duration: 800, easing: 'easeOutQuart' },
+        },
+        plugins: [{
+          id: 'textCenter',
+          afterDraw: chart => {
+            const { ctx, chartArea: { width, height, left, top } } = chart;
+            ctx.save();
+            ctx.font = 'bold 22px Poppins';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#333';
+            ctx.fillText(`${Math.round(value)}%`, width / 2 + left, height / 2 + top / 1);
+            ctx.restore();
+          }
+        }]
+      });
     }
 
-    // ===== LOAD DATA =====
+    function updateGaugeChart(id, newValue) {
+      const chart = gauges[id];
+      if (!chart) return;
+      const oldValue = chart.data.datasets[0].data[0];
+      let step = (newValue - oldValue) / 20;
+      let current = oldValue;
+      const ctx = chart.ctx;
+      const anim = setInterval(() => {
+        current += step;
+        chart.data.datasets[0].data = [current, 100 - current];
+        chart.data.datasets[0].backgroundColor[0] = getGradientColor(ctx, current);
+        chart.update();
+        if ((step > 0 && current >= newValue) || (step < 0 && current <= newValue)) clearInterval(anim);
+      }, 40);
+    }
+
+    /* ===== LOAD DATA ===== */
     function loadData() {
       db.ref("SensorData").on("value", (snap) => {
         const d = snap.val();
         if (!d) return;
-        document.getElementById("temp").innerText = `${d.temperature} °C`;
-        document.getElementById("hum").innerText = `${d.humidity} %`;
+
+        // Temperatur dan kelembaban
+        const tempEl = document.getElementById("temp");
+        const humEl = document.getElementById("hum");
+        tempEl.innerText = `${d.temperature} °C`;
+        humEl.innerText = `${d.humidity} %`;
+
+        // Warna background lembut (fade)
+        const tempCard = document.getElementById("tempCard");
+        const humCard = document.getElementById("humCard");
+
+        tempCard.style.transition = "background-color 1s ease";
+        humCard.style.transition = "background-color 1s ease";
+        tempCard.style.backgroundColor = d.temperature > 35 ? "#ff8a80" : "#a8e6cf";
+        humCard.style.backgroundColor = d.humidity > 70 ? "#4fc3f7" : "#fff59d";
 
         const soils = [d.soil1, d.soil2, d.soil3, d.soil4];
-        soils.forEach((v, i) => createGauge(`soil${i + 1}`, v));
-        createRadialGauge("avgSoilGauge", Math.round(soils.reduce((a, b) => a + b) / soils.length));
+        const avg = Math.round((soils.reduce((a,b)=>a+b,0))/4);
+
+        soils.forEach((v, i) => {
+          const id = `soil${i + 1}`;
+          if (!gauges[id]) createGaugeChart(id, v);
+          else updateGaugeChart(id, v);
+        });
+
+        if (!gauges["avgSoil"]) createGaugeChart("avgSoil", avg, true);
+        else updateGaugeChart("avgSoil", avg);
 
         const pumpBtn = document.getElementById("pumpBtn");
         const modeBtn = document.getElementById("modeBtn");
@@ -388,19 +388,33 @@
         document.getElementById("pumpStatus").innerText = d.pump === 1 ? "ON" : "OFF";
         document.getElementById("modeStatus").innerText = d.mode;
 
-        // Warna tombol dinamis
-        pumpBtn.textContent = `Pompa: ${d.pump === 1 ? "ON" : "OFF"}`;
-        pumpBtn.style.backgroundColor = d.pump === 1 ? "#28a745" : "#6c757d";
+        // Warna tombol lembut
+        pumpBtn.style.transition = "background-color 0.6s ease";
+        modeBtn.style.transition = "background-color 0.6s ease";
 
-        modeBtn.textContent = `Mode: ${d.mode}`;
-        modeBtn.style.backgroundColor = d.mode === "AUTO" ? "#ff7f0e" : "#17a2b8";
+        if (d.pump === 1) {
+          pumpBtn.className = "green";
+          pumpBtn.innerText = "Pompa: ON";
+        } else {
+          pumpBtn.className = "gray";
+          pumpBtn.innerText = "Pompa: OFF";
+        }
 
-        // Disable pompa saat mode AUTO
-        pumpBtn.disabled = d.mode === "AUTO";
+        if (d.mode === "AUTO") {
+          modeBtn.className = "orange";
+          modeBtn.innerText = "Mode: AUTO";
+          pumpBtn.classList.add("locked");
+          pumpBtn.disabled = true;
+        } else {
+          modeBtn.className = "blue";
+          modeBtn.innerText = "Mode: MANUAL";
+          pumpBtn.classList.remove("locked");
+          pumpBtn.disabled = false;
+        }
       });
     }
 
-    // ===== KONTROL =====
+    /* ===== CONTROL ===== */
     document.getElementById("pumpBtn").onclick = () => {
       const ref = db.ref("SensorData/pump");
       ref.get().then(s => ref.set(s.val() === 1 ? 0 : 1));
