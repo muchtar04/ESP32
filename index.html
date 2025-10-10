@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+    /* ====== GAYA DASAR ====== */
     body {
       font-family: 'Poppins', sans-serif;
       background-color: #f3f7fb;
@@ -26,7 +27,7 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* ===== LOGIN ===== */
+    /* ===== LOGIN PAGE ===== */
     #loginForm {
       max-width: 90%;
       width: 380px;
@@ -93,7 +94,7 @@
       margin: 20px 0;
     }
 
-    /* ===== CARD ===== */
+    /* ===== CARD (KOTAK DATA) ===== */
     .card {
       background: #ffffff;
       border-radius: 18px;
@@ -183,33 +184,60 @@
     .locked { opacity: 0.6; cursor: not-allowed; }
 
     footer { font-size: 0.85rem; color: #666; margin-top: 20px; padding-bottom: 25px; }
+
+    /* ======== RESPONSIVE MOBILE (2 PER BARIS TANPA SCROLL) ======== */
+    @media (max-width: 600px) {
+      body {
+        font-size: 14px;
+        padding: 5px;
+      }
+      .dashboard { padding: 5px; }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+      .card {
+        width: 45% !important;      /* dua kartu per baris */
+        min-width: 150px;
+        height: 160px !important;
+      }
+      .big-gauge {
+        width: 220px !important;
+        height: 220px !important;
+      }
+      .gauge {
+        width: 110px !important;
+        height: 110px !important;
+      }
+      .gauge-value { font-size: 20px; }
+      .status-text { font-size: 16px; }
+    }
   </style>
 </head>
 <body>
   <h1>🌿 DASHBOARD SISTEM IRIGASI TETES💧</h1>
 
-  <!-- LOGIN -->
+  <!-- ===== FORM LOGIN ===== -->
   <div id="loginForm" class="fade-in">
     <h2><i class="fa-solid fa-lock"></i> Login Akses</h2>
-    <div class="input-group">
-      <i class="fa-solid fa-envelope"></i>
-      <input type="email" id="email" placeholder="Email" required />
-    </div>
-    <div class="input-group">
-      <i class="fa-solid fa-key"></i>
-      <input type="password" id="password" placeholder="Password" required />
-    </div>
+    <div class="input-group"><i class="fa-solid fa-envelope"></i><input type="email" id="email" placeholder="Email" required /></div>
+    <div class="input-group"><i class="fa-solid fa-key"></i><input type="password" id="password" placeholder="Password" required /></div>
     <button id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i> Masuk</button>
   </div>
 
-  <!-- DASHBOARD -->
+  <!-- ===== DASHBOARD ===== -->
   <div id="dashboard">
     <div class="main-container fade-in">
+
+      <!-- Suhu & Kelembaban -->
       <div class="row">
         <div class="card small" id="tempCard"><div class="label">Temperatur</div><div id="temp" class="value">-- °C</div></div>
         <div class="card small" id="humCard"><div class="label">Kelembaban</div><div id="hum" class="value">-- %</div></div>
       </div>
 
+      <!-- Soil Moisture -->
       <div class="row">
         <div class="card"><div class="label">Soil 1</div><canvas id="soil1"></canvas></div>
         <div class="card"><div class="label">Soil 2</div><canvas id="soil2"></canvas></div>
@@ -219,17 +247,20 @@
         <div class="card"><div class="label">Soil 4</div><canvas id="soil4"></canvas></div>
       </div>
 
+      <!-- Gauge Rata-rata -->
       <div class="big-gauge">
         <div class="label">Rata-rata Soil</div>
         <canvas id="avgSoil"></canvas>
       </div>
 
+      <!-- Status -->
       <div class="row">
         <div class="card small"><div class="label">Status Pompa</div><div id="pumpStatus" class="value">--</div></div>
         <div class="card small"><div class="label">Status Mode</div><div id="modeStatus" class="value">--</div></div>
       </div>
     </div>
 
+    <!-- Tombol kontrol -->
     <div class="footer-btns">
       <button class="gray" id="pumpBtn">Pompa: OFF</button>
       <button class="orange" id="modeBtn">Mode: AUTO</button>
@@ -239,11 +270,13 @@
 
   <footer>© Sistem Irigasi Tetes Otomatis 2025 | muchtar umar</footer>
 
+  <!-- ===== FIREBASE SDK ===== -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <script>
+    /* ------------------ KONFIGURASI FIREBASE ------------------ */
     const firebaseConfig = {
       apiKey: "AIzaSyAVPrLQPZKo6jyIdSsCQvVHdYlr5hfRVSg",
       authDomain: "sitem-irigasi-tetes-a1675.firebaseapp.com",
@@ -258,9 +291,11 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    /* ------------------ LOGIN LOGIKA ------------------ */
     const loginForm = document.getElementById("loginForm");
     const dashboard = document.getElementById("dashboard");
 
+    // Tombol login → autentikasi Firebase
     document.getElementById("loginBtn").onclick = async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -271,8 +306,10 @@
       }
     };
 
+    // Cek status login
     auth.onAuthStateChanged((user) => {
       if (user) {
+        // Jika login berhasil → tampilkan dashboard
         loginForm.classList.add("fade-out");
         setTimeout(() => {
           loginForm.style.display = "none";
@@ -280,16 +317,20 @@
         }, 600);
         loadData();
       } else {
+        // Jika logout → tampilkan form login
         dashboard.classList.remove("show");
         loginForm.style.display = "block";
         loginForm.classList.remove("fade-out");
       }
     });
 
+    // Tombol logout
     document.getElementById("logoutBtn").onclick = () => auth.signOut();
 
-    const gauges = {};
+    /* ------------------ FUNGSI GAUGE ------------------ */
+    const gauges = {}; // penyimpanan chart aktif
 
+    // Warna gradasi gauge
     function getGradientColor(ctx, value) {
       const gradient = ctx.createLinearGradient(0, 0, 200, 0);
       gradient.addColorStop(0, "#ff0000");
@@ -298,6 +339,7 @@
       return gradient;
     }
 
+    // Membuat gauge baru (Chart.js doughnut)
     function createGaugeChart(id, value, fullCircle = false) {
       const ctx = document.getElementById(id).getContext('2d');
       gauges[id] = new Chart(ctx, {
@@ -333,6 +375,7 @@
       });
     }
 
+    // Animasi update gauge
     function updateGaugeChart(id, newValue) {
       const chart = gauges[id];
       if (!chart) return;
@@ -349,27 +392,27 @@
       }, 40);
     }
 
-    /* ===== LOAD DATA ===== */
+    /* ------------------ AMBIL DATA DARI FIREBASE ------------------ */
     function loadData() {
       db.ref("SensorData").on("value", (snap) => {
         const d = snap.val();
         if (!d) return;
 
-        // Temperatur dan kelembaban
+        // === TAMPILKAN SUHU & KELEMBABAN ===
         const tempEl = document.getElementById("temp");
         const humEl = document.getElementById("hum");
         tempEl.innerText = `${d.temperature} °C`;
         humEl.innerText = `${d.humidity} %`;
 
-        // Warna background lembut (fade)
+        // Warna background berdasarkan nilai
         const tempCard = document.getElementById("tempCard");
         const humCard = document.getElementById("humCard");
-
         tempCard.style.transition = "background-color 1s ease";
         humCard.style.transition = "background-color 1s ease";
         tempCard.style.backgroundColor = d.temperature > 35 ? "#ff8a80" : "#a8e6cf";
         humCard.style.backgroundColor = d.humidity > 70 ? "#4fc3f7" : "#fff59d";
 
+        // === SOIL SENSOR ===
         const soils = [d.soil1, d.soil2, d.soil3, d.soil4];
         const avg = Math.round((soils.reduce((a,b)=>a+b,0))/4);
 
@@ -382,13 +425,13 @@
         if (!gauges["avgSoil"]) createGaugeChart("avgSoil", avg, true);
         else updateGaugeChart("avgSoil", avg);
 
+        // === STATUS POMPA & MODE ===
         const pumpBtn = document.getElementById("pumpBtn");
         const modeBtn = document.getElementById("modeBtn");
-
         document.getElementById("pumpStatus").innerText = d.pump === 1 ? "ON" : "OFF";
         document.getElementById("modeStatus").innerText = d.mode;
 
-        // Warna tombol lembut
+        // Ganti warna tombol sesuai kondisi
         pumpBtn.style.transition = "background-color 0.6s ease";
         modeBtn.style.transition = "background-color 0.6s ease";
 
@@ -414,7 +457,7 @@
       });
     }
 
-    /* ===== CONTROL ===== */
+    /* ------------------ TOMBOL KONTROL MANUAL ------------------ */
     document.getElementById("pumpBtn").onclick = () => {
       const ref = db.ref("SensorData/pump");
       ref.get().then(s => ref.set(s.val() === 1 ? 0 : 1));
